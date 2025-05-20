@@ -1,32 +1,39 @@
-const mysql = require("mysql2/promise")
-require("dotenv").config()
+const mysql = require("mysql2/promise");
+require("dotenv").config();
+
+// Parse the connection URL
+const parseDbUrl = (url) => {
+  const parsed = new URL(url);
+  return {
+    host: parsed.hostname,
+    port: parsed.port,
+    user: parsed.username,
+    password: parsed.password,
+    database: parsed.pathname.replace('/', ''),
+    ssl: { rejectUnauthorized: false } // Required for Railway
+  };
+};
 
 // Database configuration
-const dbConfig = {
-    host: process.env.MYSQLHOST,
-    user: process.env.MYSQLUSER,
-    password: process.env.MYSQLPASSWORD,
-    database: process.env.MYSQLDATABASE,
-    port: process.env.MYSQLPORT
-}
+const dbConfig = parseDbUrl(process.env.DATABASE_URL);
 
 // Create connection pool
-let pool
+let pool;
 
 // Initialize database connection
 async function init() {
   try {
-    pool = mysql.createPool(dbConfig)
+    pool = mysql.createPool(dbConfig);
 
     // Test connection
-    const connection = await pool.getConnection()
-    console.log("Database connection established successfully")
-    connection.release()
+    const connection = await pool.getConnection();
+    console.log("Database connection established successfully");
+    connection.release();
 
-    return pool
+    return pool;
   } catch (error) {
-    console.error("Error initializing database connection:", error)
-    throw error
+    console.error("Error initializing database connection:", error);
+    throw error;
   }
 }
 
