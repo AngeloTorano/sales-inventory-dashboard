@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales & Inventory Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            height: 320px;
+        }
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <!-- Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Navigation -->
+            <header class="bg-white shadow-md">
+                <div class="flex items-center justify-between p-4">
+                    <div class="text-xl font-bold text-gray-800">Sales & Inventory Dashboard</div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-gray-600">Last Updated: <span id="lastUpdated">Loading...</span></span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4">
+                <!-- Overview Section with All Charts -->
+                <div id="overview-section">
+                    <!-- Summary Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <!-- Total Revenue Card -->
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-green-500 bg-opacity-20 text-green-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-gray-500">Total Revenue</p>
+                                    <p class="text-2xl font-semibold text-gray-800" id="totalRevenue">$0</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Total Orders Card -->
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-blue-500 bg-opacity-20 text-blue-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-gray-500">Total Orders</p>
+                                    <p class="text-2xl font-semibold text-gray-800" id="totalOrders">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Products Card -->
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-yellow-500 bg-opacity-20 text-yellow-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-gray-500">Products</p>
+                                    <p class="text-2xl font-semibold text-gray-800" id="totalProducts">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Low Stock Card -->
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-red-500 bg-opacity-20 text-red-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-gray-500">Low Stock</p>
+                                    <p class="text-2xl font-semibold text-gray-800" id="lowStockCount">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row 1 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- Monthly Sales Trend -->
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <h2 class="text-gray-800 text-lg font-semibold mb-4">Monthly Sales Trend</h2>
+                            <div class="chart-container">
+                                <div class="loading-spinner">
+                                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                                </div>
+                                <canvas id="monthlySalesChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Sales by Category -->
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <h2 class="text-gray-800 text-lg font-semibold mb-4">Sales by Category</h2>
+                            <div class="chart-container">
+                                <div class="loading-spinner">
+                                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                                </div>
+                                <canvas id="categoryPieChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row 2 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- Top Selling Products -->
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <h2 class="text-gray-800 text-lg font-semibold mb-4">Top Selling Products</h2>
+                            <div class="chart-container">
+                                <div class="loading-spinner">
+                                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                                </div>
+                                <canvas id="topProductsChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Sales by Region -->
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <h2 class="text-gray-800 text-lg font-semibold mb-4">Sales by Region</h2>
+                            <div class="chart-container">
+                                <div class="loading-spinner">
+                                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                                </div>
+                                <canvas id="regionSalesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row 3 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- Sales Growth -->
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <h2 class="text-gray-800 text-lg font-semibold mb-4">Sales Growth</h2>
+                            <div class="chart-container">
+                                <div class="loading-spinner">
+                                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                                </div>
+                                <canvas id="salesGrowthChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Inventory Status -->
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <h2 class="text-gray-800 text-lg font-semibold mb-4">Inventory Status</h2>
+                            <div class="chart-container">
+                                <div class="loading-spinner">
+                                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                                </div>
+                                <canvas id="inventoryStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row 4 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- Stock Level by Category -->
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <h2 class="text-gray-800 text-lg font-semibold mb-4">Stock Level by Category</h2>
+                            <div class="chart-container">
+                                <div class="loading-spinner">
+                                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                                </div>
+                                <canvas id="stockLevelChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Performance Metrics -->
+                        <div class="bg-white rounded-lg shadow-md p-4">
+                            <h2 class="text-gray-800 text-lg font-semibold mb-4">Performance Metrics</h2>
+                            <div class="chart-container">
+                                <div class="loading-spinner">
+                                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                                </div>
+                                <canvas id="performanceRadarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="charts.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

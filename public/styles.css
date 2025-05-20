@@ -1,0 +1,48 @@
+/* Custom styles beyond Tailwind */
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #sidebar {
+    width: 100%;
+    z-index: 40;
+  }
+}
+
+/* Chart tooltip styling */
+.chartjs-tooltip {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: 3px;
+  padding: 10px;
+  pointer-events: none;
+}
+
+/* Animation for dashboard cards */
+.bg-white {
+  transition: transform 0.3s ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
